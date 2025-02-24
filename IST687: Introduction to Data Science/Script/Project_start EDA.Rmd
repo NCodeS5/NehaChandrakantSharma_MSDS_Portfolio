@@ -1,0 +1,1155 @@
+```{r}
+#install.packages("arrow")
+```
+
+
+```{r}
+library(arrow)
+library(tidyverse)
+
+shd<- arrow::read_parquet("https://intro-datascience.s3.us-east-2.amazonaws.com/SC-data/static_house_info.parquet")
+
+Temp<- arrow::read_parquet("https://intro-datascience.s3.us-east-2.amazonaws.com/SC-data/2023-houseData/102063.parquet")
+head(Temp)
+#ed <- arrow::read_parquet("energyData.parquet")
+
+```
+
+
+```{r}
+wd <- read_csv("https://intro-datascience.s3.us-east-2.amazonaws.com/SC-data/weather/2023-weather-data/G4500010.csv")
+```
+
+
+```{r}
+set.seed(1)
+build100<-sample(shd$bldg_id,100,replace = FALSE)
+build100
+```
+
+
+```{r}
+library(tidyverse)
+julyfilter<-function(data){
+  filter<- data%>%filter(substr(as_datetime(time),6,7)=="07")
+  return(filter)
+}
+
+
+```
+
+```{r}
+# Loop through each building ID
+library(tidyverse)
+mylist<- list()
+for (i in build100) {
+  url <- paste0("https://intro-datascience.s3.us-east-2.amazonaws.com/SC-data/2023-houseData/", i, ".parquet")
+  
+  # Read the Parquet file into a data frame
+  df_name <- paste0("ed_", i)  # Create a dynamic variable name
+  mylist<- append(mylist,df_name)
+  assign(df_name, arrow::read_parquet(url))  # Assign the data frame to the dynamic variable
+  df<-get(df_name)
+  df$bldg_id<- i
+  assign(df_name,df)
+}
+
+```
+
+
+```{r}
+df<-data.frame(as.character(mylist))
+```
+
+```{r}
+
+for (i in df$as.character.mylist.) {
+  filtered_name <- i
+  assign(filtered_name, julyfilter(get(i)))
+}
+```
+
+```{r}
+fullEDf<- data.frame()
+
+for (i in df$as.character.mylist.){
+  fullEDf <- rbind.data.frame(fullEDf,get(i)) 
+}
+
+head(fullEDf)
+summary(shd)
+```
+
+```{r}
+
+merged_df<-merge.data.frame(shd,fullEDf,by = 'bldg_id', sort = TRUE, all = FALSE)
+```
+
+
+```{r}
+nrow(unique.data.frame(merged_df))
+```
+
+
+```{r}
+ install.packages("openxlsx")
+```
+
+
+```{r}
+library(openxlsx)
+
+
+# Specify the file path
+excel_file <- "output.xlsx"
+
+# Write the data frame to an Excel file
+write.xlsx(merged_df, excel_file)
+
+# Confirm the export
+cat("Data frame exported to Excel file:", excel_file, "\n")
+```
+
+
+```{r}
+#head(wd)
+julywdincreased <- wd%>%filter(substr(as_datetime(date_time),6,7)=="07")%>%arrange(date_time)
+julywdincreased$`Dry Bulb Temperature [°C]`<-julywdincreased$`Dry Bulb Temperature [°C]`+5.0
+
+```
+
+
+```{r}
+sum(is.na(merged_df))
+head(merged_df)
+#name_column <- my_df[["Name"]]
+# Explore unique values for categorical variables
+unique_values <- lapply(merged_df, function(x) length(unique(x)))
+unique_values_df <- data.frame(variable = names(unique_values), unique_count = unlist(unique_values))
+head(unique_values_df)
+
+cleaned_df <- merged_df[c('in.ahs_region','in.census_division','bldg_id','upgrade','weight','applicability','in.ashrae_iecc_climate_zone_2004','in.bedrooms','in.building_america_climate_zone','in.census_division','in.census_region','in.city','in.clothes_dryer','in.clothes_washer','in.clothes_washer_presence','in.county','in.dishwasher','in.ducts','in.electric_vehicle','in.emissions_electricity_units','in.federal_poverty_level','in.geometry_building_number_units_mf','in.geometry_building_type_acs','in.geometry_floor_area','in.geometry_foundation_type','in.geometry_wall_exterior_finish','in.geometry_wall_type','in.geometry_wall_type','in.holiday_lighting','in.hvac_cooling_efficiency','in.hvac_has_shared_system','in.hvac_heating_efficiency','in.hvac_shared_efficiencies','in.income','in.insulation_ceiling','in.insulation_floor','in.insulation_foundation_wall','in.insulation_rim_joist','in.insulation_roof','in.insulation_slab','in.insulation_wall','in.lighting','in.misc_extra_refrigerator','in.misc_freezer','in.misc_gas_fireplace','in.misc_gas_grill','in.misc_gas_lighting','in.misc_hot_tub_spa','in.misc_pool','in.misc_pool_heater','in.misc_pool_pump','in.misc_well_pump','in.natural_ventilation','in.occupants','in.plug_loads','in.refrigerator','in.sqft','in.state','in.tenure','in.usage_level','in.vacancy_status','in.vintage','in.water_heater_efficiency','in.water_heater_fuel','in.weather_file_city','in.weather_file_latitude','in.weather_file_longitude')]
+head(cleaned_df)
+summary(cleaned_df)
+#bldg_id, in.sqft,in.ahs_region,wind speed,relative humidity,in.bedrooms,time,in.weather_file_latitude,in.weather_file_longitude,
+summary(merged_df)
+head(wd)
+```
+
+
+```{r}
+head(merged_df)
+tail(merged_df)
+
+```
+
+
+```{r}
+unique_values2 <- lapply(shd, function(x) length(unique(x)))
+unique_values_df2 <- data.frame(variable = names(unique_values2), unique_count = unlist(unique_values2))
+head(unique_values_df2)
+```
+
+
+```{r}
+unique_values3 <- lapply(fullEDf, function(x) length(unique(x)))
+unique_values_df3 <- data.frame(variable = names(unique_values3), unique_count = unlist(unique_values3))
+head(unique_values_df3)
+```
+
+
+```{r}
+unique_values3 <- lapply(wd, function(x) length(unique(x)))
+unique_values_df3 <- data.frame(variable = names(unique_values3), unique_count = unlist(unique_values3))
+head(unique_values_df3)
+```
+
+
+```{r}
+head(unique_values_df3)
+```
+
+
+```{r}
+unique_values4 <- lapply(fullEDf, function(x) length(unique(x)))
+unique_values_df4 <- data.frame(variable = names(unique_values4), unique_count = unlist(unique_values4))
+head(unique_values_df4)
+```
+
+
+```{r}
+str(merged_df)
+
+```
+
+
+
+```{r}
+#_____________________________________________exploratory data analysis_____________________________
+
+library(tidyverse) # For data manipulation and visualization
+library(readxl) # For reading Excel files
+library(ggplot2) # For advanced graphing
+library(GGally) # For correlation plots
+```
+
+
+
+```{r}
+
+```
+
+
+```{r}
+library(corrplot) # For another style of correlation matrix visualization
+library(lubridate) # For date and time manipulation
+#library(scales) # For scaling graph ele(ments
+library(tidyverse)
+library(caret) # For modeling preparation
+
+data <- read_csv('C:/Users/nehac/Downloads/merged_shd_ed.csv-20231203T223336Z-001/merged_shd_ed.csv')
+#head(Final_data)
+energy_consumption_columns <- data %>%
+  select(matches("^out\\..*consumption$"))
+
+# Calculate the total energy consumption for each row
+data$total_energy_consumption <- rowSums(energy_consumption_columns, na.rm = TRUE) 
+#Creating new column that has the sum of the energy consumed by all the appliance
+```
+
+Are there any noticeable outliers in energy consumption that could indicate data entry errors or exceptional usage scenarios?
+
+```{r}
+# Select the energy consumption column (replace with the appropriate column name)
+energy_consumption <- data$totalconsumption
+
+# Create a box plot to visualize the distribution of energy consumption
+ggplot(data, aes(x=in.county,y = energy_consumption)) +
+  geom_boxplot(fill = "lightblue", color = "blue") +
+  labs(
+    y = "Energy Consumption",
+    title = "Box Plot of Energy Consumption"
+  ) +
+  theme_minimal() +  coord_flip()
+
+# Calculate summary statistics to identify outliers
+summary_stats <- summary(energy_consumption)
+Q1 <- quantile(energy_consumption, 0.25)
+Q3 <- quantile(energy_consumption, 0.75)
+IQR <- Q3 - Q1
+lower_bound <- Q1 - 1.5 * IQR
+upper_bound <- Q3 + 1.5 * IQR
+
+# Find outliers
+outliers <- data %>%
+  filter(energy_consumption < lower_bound | energy_consumption > upper_bound)
+
+# Print summary statistics and outliers
+cat("Summary Statistics:\n")
+cat(paste("Min:", min(energy_consumption), "\n"))
+cat(paste("1st Quartile (Q1):", Q1, "\n"))
+cat(paste("Median (Q2):", median(energy_consumption), "\n"))
+cat(paste("3rd Quartile (Q3):", Q3, "\n"))
+cat(paste("Max:", max(energy_consumption), "\n"))
+cat(paste("IQR (Interquartile Range):", IQR, "\n"))
+cat(paste("Lower Bound:", lower_bound, "\n"))
+cat(paste("Upper Bound:", upper_bound, "\n"))
+
+cat("\nOutliers:\n")
+print(outliers)
+```
+
+What is the Daily energy consumption accross the entire data set. 
+```{r}
+library(ggplot2)
+library(dplyr)
+library(lubridate)  # For date manipulation
+
+
+# Convert the "time" column to a DateTime object
+data$time <- as.POSIXct(data$time, format = "%d-%m-%Y %H:%M")
+
+# Aggregate energy consumption by day
+daily_energy_consumption <- data %>%
+  group_by(Date = as.Date(floor_date(time, unit = "days"))) %>%
+  summarize(DailyEnergyConsumption = sum(total_energy_consumption, na.rm = TRUE))
+
+# Create a ggplot object for the daily energy consumption trend
+ggplot(daily_energy_consumption, aes(x = Date, y = DailyEnergyConsumption)) +
+  geom_line() +  # Create a line chart
+  labs(
+    x = "Date",
+    y = "Daily Energy Consumption",
+    title = "Daily Energy Consumption Trend"
+  ) +
+  theme_minimal()
+```
+
+What is the distribution of energy usage in July across residential properties in South Carolina and the relevant parts of North Carolina?
+
+```{r}
+# Filter the data for properties in South Carolina and relevant parts of North Carolina
+filtered_data <- Final_data %>%
+  filter(in.state %in% c("SC", "NC"))  # Replace "NC" with relevant parts of North Carolina
+
+# Convert 'in.sqft' to numeric if it's not already
+filtered_data$in.sqft <- as.numeric(filtered_data$in.sqft)
+
+# Filter the data for the month of July
+july_data <- filtered_data
+
+# Create a factor variable for in.usage_level
+july_data$in.usage_level <- factor(july_data$in.usage_level)
+
+# Create a custom color palette
+custom_colors <- c("green", "orange", "red")
+
+# Create a histogram to visualize the distribution of energy usage in July
+# Use the 'fill' aesthetic to specify custom colors
+ggplot(july_data, aes(x = in.usage_level, fill = in.usage_level)) +
+  geom_bar() +
+  scale_fill_manual(values = custom_colors) +  # Specify custom colors
+  labs(
+    title = "Distribution of Energy Usage in July",
+    x = "Energy Usage Level",
+    y = "Frequency"
+  )
+```
+
+```{r}
+
+#Three Categories of Energy Usage: 
+#The energy usage is categorized into three levels - High, Medium, and Low.
+
+#Frequency of Each Category: 
+#The vertical axis (y-axis) indicates the frequency of properties falling into each energy usage category.
+
+#Most Common Usage Level: 
+#The Medium energy usage category has the highest frequency, indicating that most properties consume a medium amount of energy.
+
+#Potential Data Distribution: 
+#The distribution seems to be unimodal with the peak at Medium usage, suggesting that energy usage among these residential properties is centered around a typical value with fewer properties showing extremely high or low usage.
+
+```
+
+Are there any noticeable trends or patterns in July based on the time of the day. 
+
+```{r}
+
+
+```
+`
+```{r}
+
+```
+
+
+
+How does energy usage in July vary across different counties within South Carolina ?
+```{r}
+# Calculate the total energy consumption by county
+county_energy_consumption <- data %>%
+  group_by(in.county) %>%
+  summarize(TotalEnergyConsumption = sum(total_energy_consumption, na.rm = TRUE)) %>%
+  arrange(desc(TotalEnergyConsumption))  # Sort by TotalEnergyConsumption in descending order
+
+# Create a ggplot object to visualize county-wise energy consumption
+ggplot(county_energy_consumption, aes(x = TotalEnergyConsumption, y = fct_reorder(in.county, desc(TotalEnergyConsumption)))) +
+  geom_bar(stat = "identity", fill = "blue") +  # Create a horizontal bar plot
+  labs(
+    x = "Total Energy Consumption",
+    y = "County",
+    title = "County-wise Energy Consumption (Descending Order)"
+  ) +
+  theme_minimal() 
+```
+
+The buildings in the above counties that has maximum power consumption. 
+
+```{r}
+# Load required libraries
+library(dplyr)
+
+
+# Filter data for specific counties
+counties_to_search <- c("G4500450", "G4500190", "G4500790", "G4500510", "G4500830", "G4500630", "G4500150")
+
+filtered_data <- data %>%
+  filter(in.county %in% counties_to_search)
+
+# Find the building with maximum power consumption in each county
+max_power_buildings <- filtered_data %>%
+  group_by(in.county) %>%
+  top_n(1, total_energy_consumption) %>%
+  ungroup()
+
+# Print the result
+view(max_power_buildings)
+
+```
+
+Does the energy usage in July vary significantly depending on the weather conditions, such as temperature, humidity, or other meteorological factors?
+
+```{r}
+
+
+```
+
+```{r}
+
+
+```
+
+What is the distribution of household characteristics such as the  income levels and how do these factors relate to July energy consumption?
+
+```{r}
+library(ggplot2)
+
+# Create a grouped or stacked bar chart
+custom_colors <- c("green", "orange", "red")
+ggplot(data, aes(x = in.income, fill = total_energy_consumption)) +
+  geom_bar(position = "stack", stat = "count") +
+  scale_fill_manual(values = custom_colors)+
+  labs(title = "Income vs Usage Levels",
+       x = "Income Range",
+       y = "Power consumption") +
+  theme_minimal() + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+```
+
+****************************Feature Engineering****************************************
+
+a. Correlation Analysis: Calculate the correlation between each feature and the target variable (total_energy_consumption). Features with higher absolute correlation values are more likely to affect the target variable.
+
+
+```{r}
+
+# Load required libraries
+library(dplyr)
+library(tidyr)
+
+# Select relevant predictor variables (features) and the target variable (energy consumption)
+predictor_variables <- data %>%
+  select(bldg_id,
+upgrade,
+weight,
+applicability,
+in.sqft,
+in.bedrooms,
+in.building_america_climate_zone,
+in.ceiling_fan,
+in.city,
+in.clothes_dryer,
+in.clothes_washer,
+in.clothes_washer_presence,
+in.cooking_range,
+in.cooling_setpoint,
+in.corridor,
+in.county,
+in.dishwasher,
+in.federal_poverty_level,
+in.geometry_floor_area_bin,
+in.geometry_foundation_type,
+in.geometry_garage,
+in.geometry_stories,
+in.geometry_stories_low_rise,
+in.heating_fuel,
+in.heating_setpoint,
+in.heating_setpoint_has_offset,
+in.heating_setpoint_offset_magnitude,
+in.hot_water_fixtures,
+in.hvac_cooling_efficiency,
+in.hvac_cooling_partial_space_conditioning,
+in.hvac_cooling_type,
+in.hvac_has_ducts,
+in.hvac_has_zonal_electric_heating,
+in.hvac_heating_efficiency,
+in.hvac_heating_type,
+in.hvac_heating_type_and_fuel,
+in.income,
+in.income_recs_2015,
+in.income_recs_2020,
+in.infiltration,
+in.insulation_ceiling,
+in.insulation_floor,
+in.insulation_foundation_wall,
+in.insulation_rim_joist,
+in.insulation_roof,
+in.insulation_slab,
+in.insulation_wall,
+in.lighting,
+in.misc_extra_refrigerator,
+in.misc_freezer,
+in.misc_gas_fireplace,
+in.misc_gas_grill,
+in.misc_gas_lighting,
+in.misc_hot_tub_spa,
+in.misc_pool,
+in.misc_pool_heater,
+in.misc_pool_pump,
+in.misc_well_pump,
+in.occupants,
+in.orientation,
+in.plug_load_diversity,
+in.puma,
+in.puma_metro_status,
+in.pv_orientation,
+in.pv_system_size,
+in.range_spot_vent_hour,
+in.reeds_balancing_area,
+in.refrigerator,
+in.roof_material,
+in.state,
+in.tenure,
+in.usage_level,
+in.vacancy_status,
+in.vintage,
+in.vintage_acs,
+in.water_heater_efficiency,
+in.water_heater_fuel,
+in.weather_file_city,
+in.weather_file_latitude,
+in.weather_file_longitude,
+in.windows,
+upgrade.insulation_roof,
+upgrade.water_heater_efficiency,
+upgrade.hvac_cooling_efficiency,
+upgrade.infiltration_reduction,
+upgrade.geometry_foundation_type,
+upgrade.clothes_dryer,
+upgrade.insulation_ceiling,
+upgrade.ducts,
+upgrade.hvac_heating_type,
+upgrade.insulation_wall,
+upgrade.insulation_foundation_wall,
+upgrade.hvac_heating_efficiency,
+upgrade.cooking_range,
+out.electricity.ceiling_fan.energy_consumption,
+out.electricity.clothes_dryer.energy_consumption,
+out.electricity.clothes_washer.energy_consumption,
+out.electricity.cooling_fans_pumps.energy_consumption,
+out.electricity.cooling.energy_consumption,
+out.electricity.dishwasher.energy_consumption,
+out.electricity.freezer.energy_consumption,
+out.electricity.heating_fans_pumps.energy_consumption,
+out.electricity.heating.energy_consumption,
+out.electricity.hot_tub_heater.energy_consumption,
+out.electricity.hot_tub_pump.energy_consumption,
+out.electricity.hot_water.energy_consumption,
+out.electricity.lighting_exterior.energy_consumption,
+out.electricity.lighting_garage.energy_consumption,
+out.electricity.lighting_interior.energy_consumption,
+out.electricity.mech_vent.energy_consumption,
+out.electricity.plug_loads.energy_consumption,
+out.electricity.pool_heater.energy_consumption,
+out.electricity.pool_pump.energy_consumption,
+out.electricity.pv.energy_consumption,
+out.electricity.range_oven.energy_consumption,
+out.electricity.refrigerator.energy_consumption,
+out.electricity.well_pump.energy_consumption,
+out.natural_gas.fireplace.energy_consumption,
+out.natural_gas.grill.energy_consumption,
+out.natural_gas.hot_tub_heater.energy_consumption,
+out.natural_gas.lighting.energy_consumption,
+out.natural_gas.pool_heater.energy_consumption,
+time,
+total_energy_consumption
+  )
+
+# Separate character and numeric variables
+character_vars <- select_if(predictor_variables, is.character)
+
+numeric_vars <- select_if(predictor_variables, is.numeric)
+
+
+# One-hot encode character variables
+encoded_character <- character_vars %>%
+  mutate_all(as.factor) %>%
+  mutate_all(funs(as.numeric(as.factor(.))))
+
+# Combine the numeric and encoded character variables
+predictor_variables <- bind_cols(numeric_vars, encoded_character)
+
+predictor_variables
+# Calculate correlations with missing value handling
+correlations <- sapply(predictor_variables, function(var) cor(var, data$total_energy_consumption, use = "pairwise.complete.obs"))
+
+# Extract the absolute correlation values
+correlation_with_energy_consumption <- abs(correlations)
+
+# Sort the features by their absolute correlation values
+sorted_features <- sort(correlation_with_energy_consumption, decreasing = TRUE)
+
+# Print the sorted features and their correlation values
+result <- data.frame(Feature = names(sorted_features), Correlation = sorted_features)
+view(result)
+
+
+
+```
+b. Feature Importance with Machine Learning Models: Train a machine learning model (e.g., Random Forest, Gradient Boosting) on your data and evaluate feature importance. Many machine learning libraries provide built-in functions to calculate feature importance.
+
+```{r}
+library(randomForest)
+
+# Fit a Random Forest model
+rf_model <- randomForest(total_energy_consumption ~ ., data = predictor_variables)
+
+# Get feature importance scores
+importance_scores <- importance(rf_model)
+
+# Sort features by importance
+sorted_features <- importance_scores[order(importance_scores, decreasing = TRUE), , drop = FALSE]
+
+# Print the sorted features and their importance scores
+view(sorted_features)
+
+
+
+```
+
+
+c. Recursive Feature Elimination (RFE): Use RFE with a machine learning model to iteratively remove less important features and see how it impacts model performance.
+
+```{r}
+library(caret)
+
+# Create a control function for RFE
+ctrl <- rfeControl(functions = rfFuncs, method = "cv", number = 10)
+
+# Run RFE with a Random Forest model
+rfe_result <- rfe(predictor_variables, data$total_energy_consumption, sizes = 1:ncol(predictor_variables), rfeControl = ctrl)
+
+# Print the results
+print(rfe_result)
+
+
+```
+
+
+
+
+```{r}
+
+
+
+```
+```{r}
+
+```
+
+
+
+
+
+```{r}
+df <- read_csv('C:/Users/nehac/Downloads/Project_mock.csv')
+energy_consumption_columns <- data %>%
+  select(matches("^out\\..*consumption$"))
+
+# Calculate the total energy consumption for each row
+data$total_energy_consumption <- rowSums(energy_consumption_columns, na.rm = TRUE)
+
+```
+
+
+
+```{r}
+
+# Load required libraries
+library(dplyr)
+library(tidyr)
+
+# Select relevant predictor variables (features) and the target variable (energy consumption)
+predictor_variables <- data %>%
+  select(bldg_id,
+upgrade,
+weight,
+applicability,
+in.sqft,
+in.bedrooms,
+in.building_america_climate_zone,
+in.ceiling_fan,
+in.city,
+in.clothes_dryer,
+in.clothes_washer,
+in.clothes_washer_presence,
+in.cooking_range,
+in.cooling_setpoint,
+in.corridor,
+in.county,
+in.dishwasher,
+in.federal_poverty_level,
+in.geometry_floor_area_bin,
+in.geometry_foundation_type,
+in.geometry_garage,
+in.geometry_stories,
+in.geometry_stories_low_rise,
+in.heating_fuel,
+in.heating_setpoint,
+in.heating_setpoint_has_offset,
+in.heating_setpoint_offset_magnitude,
+in.hot_water_fixtures,
+in.hvac_cooling_efficiency,
+in.hvac_cooling_partial_space_conditioning,
+in.hvac_cooling_type,
+in.hvac_has_ducts,
+in.hvac_has_zonal_electric_heating,
+in.hvac_heating_efficiency,
+in.hvac_heating_type,
+in.hvac_heating_type_and_fuel,
+in.income,
+in.income_recs_2015,
+in.income_recs_2020,
+in.infiltration,
+in.insulation_ceiling,
+in.insulation_floor,
+in.insulation_foundation_wall,
+in.insulation_rim_joist,
+in.insulation_roof,
+in.insulation_slab,
+in.insulation_wall,
+in.lighting,
+in.misc_extra_refrigerator,
+in.misc_freezer,
+in.misc_gas_fireplace,
+in.misc_gas_grill,
+in.misc_gas_lighting,
+in.misc_hot_tub_spa,
+in.misc_pool,
+in.misc_pool_heater,
+in.misc_pool_pump,
+in.misc_well_pump,
+in.occupants,
+in.orientation,
+in.plug_load_diversity,
+in.puma,
+in.puma_metro_status,
+in.pv_orientation,
+in.pv_system_size,
+in.range_spot_vent_hour,
+in.reeds_balancing_area,
+in.refrigerator,
+in.roof_material,
+in.state,
+in.tenure,
+in.usage_level,
+in.vacancy_status,
+in.vintage,
+in.vintage_acs,
+in.water_heater_efficiency,
+in.water_heater_fuel,
+in.weather_file_city,
+in.weather_file_latitude,
+in.weather_file_longitude,
+in.windows,
+upgrade.insulation_roof,
+upgrade.water_heater_efficiency,
+upgrade.hvac_cooling_efficiency,
+upgrade.infiltration_reduction,
+upgrade.geometry_foundation_type,
+upgrade.clothes_dryer,
+upgrade.insulation_ceiling,
+upgrade.ducts,
+upgrade.hvac_heating_type,
+upgrade.insulation_wall,
+upgrade.insulation_foundation_wall,
+upgrade.hvac_heating_efficiency,
+upgrade.cooking_range,
+out.electricity.ceiling_fan.energy_consumption,
+out.electricity.clothes_dryer.energy_consumption,
+out.electricity.clothes_washer.energy_consumption,
+out.electricity.cooling_fans_pumps.energy_consumption,
+out.electricity.cooling.energy_consumption,
+out.electricity.dishwasher.energy_consumption,
+out.electricity.freezer.energy_consumption,
+out.electricity.heating_fans_pumps.energy_consumption,
+out.electricity.heating.energy_consumption,
+out.electricity.hot_tub_heater.energy_consumption,
+out.electricity.hot_tub_pump.energy_consumption,
+out.electricity.hot_water.energy_consumption,
+out.electricity.lighting_exterior.energy_consumption,
+out.electricity.lighting_garage.energy_consumption,
+out.electricity.lighting_interior.energy_consumption,
+out.electricity.mech_vent.energy_consumption,
+out.electricity.plug_loads.energy_consumption,
+out.electricity.pool_heater.energy_consumption,
+out.electricity.pool_pump.energy_consumption,
+out.electricity.pv.energy_consumption,
+out.electricity.range_oven.energy_consumption,
+out.electricity.refrigerator.energy_consumption,
+out.electricity.well_pump.energy_consumption,
+out.natural_gas.fireplace.energy_consumption,
+out.natural_gas.grill.energy_consumption,
+out.natural_gas.hot_tub_heater.energy_consumption,
+out.natural_gas.lighting.energy_consumption,
+out.natural_gas.pool_heater.energy_consumption,
+time,
+total_energy_consumption
+  )
+
+# Separate character and numeric variables
+character_vars <- select_if(predictor_variables, is.character)
+numeric_vars <- select_if(predictor_variables, is.numeric)
+
+# One-hot encode character variables
+encoded_character <- character_vars %>%
+  mutate_all(as.factor) %>%
+  mutate_all(funs(as.numeric(as.factor(.))))
+
+# Combine the numeric and encoded character variables
+predictor_variables <- bind_cols(numeric_vars, encoded_character)
+
+# Calculate correlation coefficients
+correlations <- cor(predictor_variables, use = "complete.obs", method = "pearson")
+
+# Extract the absolute correlation values for the target variable
+correlation_with_energy_consumption <- abs(correlations[, "total_energy_consumption"])
+
+# Sort the features by their absolute correlation values
+sorted_features <- sort(correlation_with_energy_consumption, decreasing = TRUE)
+
+# Print the sorted features and their correlation values
+result <- data.frame(Feature = names(sorted_features), Correlation = sorted_features)
+print(result)
+
+
+
+
+
+```
+
+
+```{r}
+#in.sqft - Square footage of the area, with a correlation coefficient of about 0.311.
+#in.occupants - Number of occupants, with a correlation of approximately 0.190.
+# Heating setpoint, which might be the temperature set on a thermostat for heating, with a correlation of around 0.176.
+#in.bedrooms - Number of bedrooms, with a correlation coefficient of about 0.142.
+#in.cooling_setpoint - Cooling setpoint, likely similar to heating setpoint but for cooling, with a correlation of around 0.131.
+#The other features listed (in.insulation_floor, in.insulation_wall, in.heating_fuel, in.insulation_ceiling, in.windows, in.insulation_foundation_wall) have even smaller correlation coefficients, suggesting they have a less significant linear relationship with total energy consumption in this specific dataset.
+```
+
+
+
+
+```{r}
+#__________________________fresh Start__________________________________
+
+
+
+
+library(ggplot2)
+library(dplyr)
+library(lubridate)  # For date manipulation
+
+
+# Convert the "time" column to a DateTime object
+data$time <- as.POSIXct(data$time, format = "%d-%m-%Y %H:%M")
+
+# Aggregate energy consumption by day
+daily_energy_consumption <- data %>%
+  group_by(Date = as.Date(floor_date(time, unit = "days"))) %>%
+  summarize(DailyEnergyConsumption = sum(total_energy_consumption, na.rm = TRUE))
+
+# Create a ggplot object for the daily energy consumption trend
+ggplot(daily_energy_consumption, aes(x = Date, y = DailyEnergyConsumption)) +
+  geom_line() +  # Create a line chart
+  labs(
+    x = "Date",
+    y = "Daily Energy Consumption",
+    title = "Daily Energy Consumption Trend"
+  ) +
+  theme_minimal()
+
+
+```
+NEW EDA
+
+```{r}
+library(readr)
+data <- read_csv("merged_df.csv")
+head(data)
+
+```
+
+1.What is the county wise energy consumption? (Jash n Sampada)
+```{r}
+ggplot(data, aes(x = in.county, y = totalconsumption, fill = in.county)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Total Energy Consumption per County",
+       x = "County",
+       y = "Total Energy Consumption") + theme_minimal() + theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+```
+
+2.What is the distribution of energy usage in July across residential properties in South Carolina and the relevant parts of North Carolina? (Neha,Jash,Sampada)
+```{r}
+library(tidyverse)
+# Filter the data for properties in South Carolina and relevant parts of North Carolina
+filtered_data <- data %>%
+  filter(in.state %in% c("SC", "NC"))  # Replace "NC" with relevant parts of North Carolina
+
+# Convert 'in.sqft' to numeric if it's not already
+filtered_data$in.sqft <- as.numeric(filtered_data$in.sqft)
+
+# Filter the data for the month of July
+july_data <- filtered_data
+
+# Create a factor variable for in.usage_level
+july_data$in.usage_level <- factor(july_data$in.usage_level)
+
+# Create a custom color palette
+custom_colors <- c("green", "orange", "red")
+
+# Create a histogram to visualize the distribution of energy usage in July
+# Use the 'fill' aesthetic to specify custom colors
+ggplot(july_data, aes(x = in.usage_level, fill = in.usage_level)) +
+  geom_bar() +
+  scale_fill_manual(values = custom_colors) +  # Specify custom colors
+  labs(
+    title = "Distribution of Energy Usage in July",
+    x = "Energy Usage Level",
+    y = "Frequency"
+  )
+```
+3.How does energy usage in July vary across different counties within South Carolina ? (Neha,Sampada,Jash)
+
+```{r}
+filtered_data <- data %>% filter(in.state %in% c("SC", "NC"))
+# Calculate the total energy consumption by county
+county_energy_consumption <- filtered_data %>%
+  group_by(in.county) %>%
+  summarize(TotalEnergyConsumption = sum(totalconsumption, na.rm = TRUE)) %>%
+  arrange(desc(TotalEnergyConsumption))  # Sort by TotalEnergyConsumption in descending order
+
+# Create a ggplot object to visualize county-wise energy consumption
+ggplot(county_energy_consumption, aes(x = TotalEnergyConsumption, y = fct_reorder(in.county, desc(TotalEnergyConsumption)))) +
+  geom_bar(stat = "identity", fill = "blue") +  # Create a horizontal bar plot
+  labs(
+    x = "Total Energy Consumption",
+    y = "County",
+    title = "County-wise Energy Consumption (Descending Order) for South Carilona"
+  ) +
+  theme_minimal()
+```
+
+
+```{r}
+library(readr)
+data2 <- read_csv("merged_geo_avgwd_df.csv")
+head(data2)
+```
+4. How does temperature effect the energy consumption in North and South Carilona (Jash n sampada)
+
+```{r}
+filtered_data <- data2 %>% filter(in.state %in% c("SC", "NC"))
+ggplot(filtered_data, aes(x = avg_temp, y = totalconsumption)) +
+  geom_point(size = 3, color = "blue") +
+  geom_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(title = "Temperature vs. Energy Consumption",
+       x = "Temperature (Celsius)",
+       y = "Energy Consumption") + theme_minimal() #Has a positive correlation
+```
+
+5. How does humidity effect the energy consumption in North and South Carilona (Jash n sampada)
+
+```{r}
+filtered_data <- data2 %>% filter(in.state %in% c("SC", "NC"))
+ggplot(filtered_data, aes(x = avgHumidity, y = totalconsumption)) +
+  geom_point(size = 3, color = "blue") +
+  geom_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(title = "Humidity vs. Energy Consumption",
+       x = "Humidity", y = "Energy Consumption") + theme_minimal() #Has a negative correlation
+```
+
+6. How does income effect the energy consumption in North and South Carilona (Jash n sampada)
+
+```{r}
+# Assuming 'data' is your data frame
+# Replace 'in.income' and 'totalconsumption' with your actual column names
+
+custom_colors <- c("green", "orange", "red")
+
+ggplot(data, aes(x = in.income, fill = totalconsumption)) +
+  geom_bar(position = "stack", stat = "count") +
+  scale_fill_manual(values = custom_colors) +
+  labs(title = "Income vs Usage Levels",
+       x = "Income Range",
+       y = "Power consumption") + theme_minimal() + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+```
+
+
+
+```{r}
+
+```
+
+7. Daily Energy Consumption (Neha)
+
+```{r}
+library(ggplot2)
+library(dplyr)
+library(lubridate)  # For date manipulation
+
+
+# Convert the "time" column to a DateTime object
+data$time <- as.POSIXct(data$time, format = "%d-%m-%Y %H:%M")
+
+# Aggregate energy consumption by day
+daily_energy_consumption <- data %>%
+  group_by(Date = as.Date(floor_date(time, unit = "days"))) %>%
+  summarize(DailyEnergyConsumption = sum(totalconsumption, na.rm = TRUE))
+
+# Create a ggplot object for the daily energy consumption trend
+ggplot(daily_energy_consumption, aes(x = Date, y = DailyEnergyConsumption)) +
+  geom_line() +  # Create a line chart
+  labs(
+    x = "Date",
+    y = "Daily Energy Consumption",
+    title = "Daily Energy Consumption Trend"
+  ) + theme_minimal()
+```
+
+8. Energy consumption for 6 appliances
+
+```{r}
+# Load the ggplot2 library
+library(ggplot2)
+filtered_data <- data2 %>% filter(in.state %in% c('SC', 'NC'))
+# Sample data (replace this with your actual data)
+energy_data2 <- data.frame(
+  EnergyConsumed = c(filtered_data$sum_ceiling_fan, filtered_data$sum_clothes_dryer,filtered_data$sum_freezer,filtered_data$sum_cooling_fans_pumps,filtered_data$sum_dishwasher,filtered_data$sum_heating_fans_pumps),Appliance = c('fan','dryer','freezer','cooling fan pumps','dishwasher','heating fan pumps' )
+)
+
+# Create a pie chart
+ggplot(energy_data2, aes(x = "", y = EnergyConsumed, fill = Appliance)) +
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar("y") +
+  labs(title = "Energy Consumption by Appliance",
+       fill = "Appliance",
+       y = "Energy Consumed (kWh)") +
+  scale_fill_manual(values = c("fan" = "orange", "dryer" = "blue", "freezer" = "green","cooling fan pumps" = 'yellow',"dishwasher" = 'red' , "heating fan pumps" = "pink")) +
+```
+
+9. Are there any noticeable outliers in energy consumption that could indicate data entry errors or exceptional usage scenarios? (Neha)
+
+```{r}
+# Select the energy consumption column (replace with the appropriate column name)
+energy_consumption <- data$totalconsumption
+
+# Create a box plot to visualize the distribution of energy consumption
+ggplot(data, aes(x=in.county,y = energy_consumption)) +
+  geom_boxplot(fill = "lightblue", color = "blue") +
+  labs(
+    y = "Energy Consumption",
+    title = "Box Plot of Energy Consumption"
+  ) +
+  theme_minimal() +  coord_flip()
+
+# Calculate summary statistics to identify outliers
+summary_stats <- summary(energy_consumption)
+Q1 <- quantile(energy_consumption, 0.25)
+Q3 <- quantile(energy_consumption, 0.75)
+IQR <- Q3 - Q1
+lower_bound <- Q1 - 1.5 * IQR
+upper_bound <- Q3 + 1.5 * IQR
+
+# Find outliers
+outliers <- data %>%
+  filter(energy_consumption < lower_bound | energy_consumption > upper_bound)
+
+# Print summary statistics and outliers
+cat("Summary Statistics:\n")
+cat(paste("Min:", min(energy_consumption), "\n"))
+cat(paste("1st Quartile (Q1):", Q1, "\n"))
+cat(paste("Median (Q2):", median(energy_consumption), "\n"))
+cat(paste("3rd Quartile (Q3):", Q3, "\n"))
+cat(paste("Max:", max(energy_consumption), "\n"))
+cat(paste("IQR (Interquartile Range):", IQR, "\n"))
+cat(paste("Lower Bound:", lower_bound, "\n"))
+cat(paste("Upper Bound:", upper_bound, "\n"))
+
+cat("\nOutliers:\n")
+print(outliers)
+```
+
+10. The buildings in the above counties that has maximum power consumption. (Neha)
+```{r}
+# Load required libraries
+library(dplyr)
+
+
+# Filter data for specific counties
+counties_to_search <- c("G4500190", "G4500790", "G4500130", "G4500510", "G4500910", "G4500350", "G4500450")
+
+filtered_data <- data %>%
+  filter(in.county %in% counties_to_search)
+
+# Find the building with maximum power consumption in each county
+max_power_buildings <- filtered_data %>%
+  group_by(in.county) %>%
+  top_n(1, totalconsumption) %>%
+  ungroup()
+
+# Print the result
+head(max_power_buildings)
+```
+
+11. Does vintage houses have higher energy consumption (Jash n sampada)
+
+```{r}
+# Create a bar plot
+ggplot(data, aes(x = in.vintage, y = totalconsumption, fill = in.vintage)) +
+  geom_bar(stat = "identity", position = "dodge", width = 0.7) +
+  labs(title = "Relationship between Vintage Houses and Total Energy Consumption",
+       x = "Vintage",
+       y = "Total Energy Consumption",
+       fill = "Vintage") + theme_minimal()
+```
+
+12. Percentage Distribution of Usage Levels by Climate Zone and City (Jash and Neha)
+
+```{r}
+ggplot(data, aes(x = in.city, fill = in.usage_level)) +
+  geom_bar(position = "fill") +
+  facet_wrap(~in.building_america_climate_zone) +
+  labs(title = "Percentage Distribution of Usage Levels by Climate Zone and City",
+       x = "City",
+       y = "Percentage",
+       fill = "Usage Level") +
+  scale_y_continuous(labels = scales::percent_format()) +
+  theme_minimal() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+ 13. Appliances vs Energy Consumption chart.(Sai and Jash)
+```{r}
+
+library(ggplot2)
+filtered_data <- merged_geo_avgwd_df %>% filter(in.state %in% c('SC', 'NC'))
+# Sample data (replace this with your actual data)
+energy_data2 <- data.frame(
+  EnergyConsumed = c(filtered_data$sum_ceiling_fan, filtered_data$sum_clothes_dryer,filtered_data$sum_freezer,filtered_data$sum_lighting_exterior,filtered_data$sum_dishwasher,filtered_data$sum_lighting_gas,filtered_data$sum_range_oven,filtered_data$sum_lighting_interior,filtered_data$sum_hot_water,filtered_data$sum_hot_tub_heater,filtered_data$sum_cooling),Appliance = c('fan','dryer','freezer','lighting exterior','dishwasher','lighting gas','range oven','lighting interior','hot water','hot tub heater','cooling' )
+)
+
+# Create a pie chart
+ggplot(energy_data2, aes(x = Appliance, y = EnergyConsumed, fill = Appliance)) +
+  geom_bar(stat = "identity", width = 1, position = 'stack') +
+  labs(title = "Energy Consumption by Appliance",
+       fill = "Appliance",
+       y = "Energy Consumed (kWh)")
+```
+```{r}
+unique(merged_df$in.clothes_dryer)
+```
+
+
+```{r}
+out_column_names
+```
+
+
+
+```
+
+
+
